@@ -26,6 +26,7 @@ long long BTreeInternalNode::getNthKey(int idx) {
 	return this->keys[idx];
 }
 
+
 void BTreeInternalNode::makeMeRoot(BTreeNode* left, BTreeNode* right, long long newvalue) {
 	this->child[0] = left;
 	this->child[1] = right;
