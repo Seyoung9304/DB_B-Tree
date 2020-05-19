@@ -14,7 +14,7 @@ BTreeInternalNode::BTreeInternalNode() {
 	weight = 0;
 	int i = 0;
 	while (i< NUM_KEYS){
-		keys[i] = NULL; //¹è¿­ÃÊ±âÈ­
+		keys[i] = NULL; //ë°°ì—´ì´ˆê¸°í™”
 		child[i++] = NULL;
 	}
 	child[i] = NULL;
@@ -32,37 +32,28 @@ void BTreeInternalNode::makeMeRoot(BTreeNode* left, BTreeNode* right, long long 
 	this->keys[0] = newvalue;
 }
 
-int BTreeInternalNode::findPlace(int fkey) { //fkey¿Í key¹è¿­ ´ë¼Òºñ±³¸¦ ÅëÇØ child¹è¿­ idx¸¦ ¹İÈ¯(caller´Â idx¸¦ ¹Ş¾Æ¼­ child[idx]¸¦ ´ÙÀ½À¸·Î Å½»ö)
+int BTreeInternalNode::findPlace(int fkey) { //fkeyì™€ keyë°°ì—´ ëŒ€ì†Œë¹„êµë¥¼ í†µí•´ childë°°ì—´ idxë¥¼ ë°˜í™˜(callerëŠ” idxë¥¼ ë°›ì•„ì„œ child[idx]ë¥¼ ë‹¤ìŒìœ¼ë¡œ íƒìƒ‰)
 	for (int i = 0; i < weight; i++) {
 		if (fkey < keys[i])
 			return i;
 	}
-	return weight; //¸¶Áö¸·
+	return weight; //ë§ˆì§€ë§‰
 }
-
-/*
-void connect(BTreeNode* left, BTreeNode* right, BTreeNode* parent){
-	//splitµÇ¾î »õ·Î »ı±ä internal ³ëµå(this)¿¡¼­ È£ÃâÇÔ. 
-	//1. thisÀÇ keys, child Ã¤¿ì°í ÇüÁ¦ ³ëµå keys, child »©ÁÜ. 
-		//ÀÌ¶§, right->child[0] key°ªÀ» keys[0]¿¡ ³ÖÀ»Áö ¸»Áö´Â left, rightÀÇ Å¸ÀÔ º¸°í °áÁ¤.
-		//leaf¿Í ¿¬°áÇÏ´Â °æ¿ì¿¡´Â ³Ö¾îÁÖ°í, 
-		//internal°ú ¿¬°áÇÏ´Â °æ¿ì¿¡´Â ³ÖÁö ¾ÊÀ½. 
-	//2. À§¿Í ¿¬°á 
-	//3. right¸¦ child ¹è¿­¿¡ ³Ö¾îÁÜ. (»õ·Î »ı°åÀ¸´Ï±î)
-	//4. À§·Î ¿Ã·Áº¸³¾ key
-	//¿ŞÂÊ/¿À¸¥ÂÊ ÀÚ½Ä°ú ÀÌµéÀÇ ¿ø·¡ ºÎ¸ğ ³ëµå (»õ·Î »ı±ä ¾ÖÀÇ ÇüÁ¦ ³ëµå°¡ µÉ ³ëµå) Á¤º¸ °¡Áö°í µé¾î°¨. 
-	
-}
-*/
 
 long long BTreeInternalNode::split_internal(long long newvalue, int newvalue_idx, BTreeInternalNode* sibling, BTreeNode* rightchild) {
-	//newinternal->split_internal·Î È£Ãâ. 
+	//newinternal->split_internalë¡œ í˜¸ì¶œ. 
 	//returns a value which will be inserted in caller object's parent node.
-	//¿©±â¼­ newvalue_idx´Â rightchild°¡ sibling¿¡ ¿¬°áµÇ¾îÀÖ´ø child ¹è¿­ idxÀÓ. - child[newvalue_idx+1] = rightchild ÇØÁÖ¸é µÊ. 
+	//ì—¬ê¸°ì„œ newvalue_idxëŠ” rightchildê°€ siblingì— ì—°ê²°ë˜ì–´ìˆë˜ child ë°°ì—´ idxì„. - child[newvalue_idx+1] = rightchild í•´ì£¼ë©´ ë¨. 
+	
+	
 	this->weight = 4;
 	sibling->weight = 6;
 
-	//temparr·Î keysº¹»ç. 
+	/*
+	this->weight = 1;
+	sibling->weight = 2;
+	*/
+	//temparrë¡œ keysë³µì‚¬. 
 	long long temparr[11];
 	for (int i = 0; i < newvalue_idx; i++)
 		temparr[i] = sibling->keys[i];
@@ -70,7 +61,7 @@ long long BTreeInternalNode::split_internal(long long newvalue, int newvalue_idx
 	for (int i = newvalue_idx + 1; i < 11; i++)
 		temparr[i] = sibling->keys[i - 1];
 
-	//tempchildarr·Î childº¹»ç, rightchild Æ÷ÇÔÇÏ¿© tempchildarr»ı¼º. (¿¬°á¿Ï·áµÇ¾ú´Ù°í º¼ ¼ö ÀÖÀ½)
+	//tempchildarrë¡œ childë³µì‚¬, rightchild í¬í•¨í•˜ì—¬ tempchildarrìƒì„±. (ì—°ê²°ì™„ë£Œë˜ì—ˆë‹¤ê³  ë³¼ ìˆ˜ ìˆìŒ)
 	BTreeNode* tempchildarr[12];
 	for (int i = 0; i <= newvalue_idx; i++)
 		tempchildarr[i] = sibling->child[i];
@@ -78,7 +69,7 @@ long long BTreeInternalNode::split_internal(long long newvalue, int newvalue_idx
 	for (int i = newvalue_idx + 2; i < 12; i++)
 		tempchildarr[i] = sibling->child[i - 1];
 
-	//sibling, thisÀÇ key ¼¼ÆÃ
+	//sibling, thisì˜ key ì„¸íŒ…
 	for (int i = 0; i < sibling->weight; i++)
 		sibling->keys[i] = temparr[i];
 	for (int i = sibling->weight; i < NUM_KEYS; i++)
@@ -89,27 +80,27 @@ long long BTreeInternalNode::split_internal(long long newvalue, int newvalue_idx
 	for (int i = this->weight; i < NUM_KEYS; i++)
 		this->keys[i] = NULL;
 
-	//sibling, thisÀÇ child ¼¼ÆÃ
+	//sibling, thisì˜ child ì„¸íŒ…
 	for (int i = 0; i <= sibling->weight; i++)
 		sibling->child[i] = tempchildarr[i];
 	for (int i = sibling->weight + 1; i < NUM_KEYS + 1; i++)
 		sibling->child[i] = NULL;
 
 	for (int i = 0; i <= this->weight; i++)
-		this->child[i] = tempchildarr[i + sibling->weight + 2];
+		this->child[i] = tempchildarr[i + sibling->weight + 1];
 	for (int i = this->weight + 1; i < NUM_KEYS + 1; i++)
 		this->child[i] = NULL;
 
 	return temparr[sibling->weight];
-	//¸®ÅÏ ÈÄ, 
-	//1. history[i+1] ÀÌ fullÀÎÁö ¿©ºÎ¿¡ µû¶ó ´Ù½Ã split ¶Ç´Â ±×³É right push
-	//2. ÀÌ ÇÔ¼ö¸¦ ºÒ·¶´ø caller object´Â »õ·Î¿î rightchild°¡ µÊ. (siblingÀÇ parent¿Í connectionÀÌ ÇÊ¿äÇÏ´Ù´Â ¼Ò¸®ÀÓ~)
+	//ë¦¬í„´ í›„, 
+	//1. history[i+1] ì´ fullì¸ì§€ ì—¬ë¶€ì— ë”°ë¼ ë‹¤ì‹œ split ë˜ëŠ” ê·¸ëƒ¥ right push
+	//2. ì´ í•¨ìˆ˜ë¥¼ ë¶ˆë €ë˜ caller objectëŠ” ìƒˆë¡œìš´ rightchildê°€ ë¨. (siblingì˜ parentì™€ connectionì´ í•„ìš”í•˜ë‹¤ëŠ” ì†Œë¦¬ì„~)
 }
 
 void BTreeInternalNode::pushRight(int newvalue, int newvalue_idx, BTreeNode* right) {
-	//keys[newvalue_idx]¿¡ right->keys[0] Áı¾î³Ö°í, child[newvalue_idx]=left, child[newvalue_idx+1]=right.
-	//ÀÌ ÇÔ¼ö¸¦ ºÎ¸£´Â °´Ã¼°¡ overflow°¡ ¾Æ´Ñ °æ¿ì¿¡¸¸ È£Ãâ °¡´É. 
-	//ÀÌ¶§ left, right´Â internalÀÏ¼öµµ, leafÀÏ¼öµµ!
+	//keys[newvalue_idx]ì— right->keys[0] ì§‘ì–´ë„£ê³ , child[newvalue_idx]=left, child[newvalue_idx+1]=right.
+	//ì´ í•¨ìˆ˜ë¥¼ ë¶€ë¥´ëŠ” ê°ì²´ê°€ overflowê°€ ì•„ë‹Œ ê²½ìš°ì—ë§Œ í˜¸ì¶œ ê°€ëŠ¥. 
+	//ì´ë•Œ left, rightëŠ” internalì¼ìˆ˜ë„, leafì¼ìˆ˜ë„!
 	for (int i = this->weight; i > newvalue_idx; i--)
 		keys[i] = keys[i - 1];
 	for (int i = this->weight + 1; i > newvalue_idx + 1; i--)
@@ -120,29 +111,29 @@ void BTreeInternalNode::pushRight(int newvalue, int newvalue_idx, BTreeNode* rig
 }
 
 BTreeLeafNode* BTreeInternalNode::findLeafNode(int fkey) { 
-	//findplaceÇÔ¼ö ÀÌ¿ë
-	//ÁÖ¾îÁøfkey°ªÀ» °¡Áú ¼ö ÀÖ´Â leaf node¸¦ ¹İÈ¯. 
+	//findplaceí•¨ìˆ˜ ì´ìš©
+	//ì£¼ì–´ì§„fkeyê°’ì„ ê°€ì§ˆ ìˆ˜ ìˆëŠ” leaf nodeë¥¼ ë°˜í™˜. 
 	int idx = this->findPlace(fkey);
 	BTreeNode* obj = this->child[idx];
 	while (obj->getNodeType() == INTERNAL) {
 		idx = ((BTreeInternalNode*)obj)->findPlace(fkey);
 		obj = ((BTreeInternalNode*)obj)->child[idx];
 	}
-	//ÀÌÁ¦ obj´Â leaf nodeÀÓ
+	//ì´ì œ objëŠ” leaf nodeì„
 	return (BTreeLeafNode*)obj;
 }
 
 BTreeLeafNode* BTreeInternalNode::findLeafNode(int fkey, History* head) {
-	//findplaceÇÔ¼ö ÀÌ¿ë
-	//ÁÖ¾îÁøfkey°ªÀ» °¡Áú ¼ö ÀÖ´Â leaf node¸¦ ¹İÈ¯. 
-	//history ¸µÅ©µå¸®½ºÆ® ÇüÅÂ·Î °ü¸®. head¿Í °¡±î¿ï¼ö·Ï ÇÏÀ§ ³ëµåÀÓ
+	//findplaceí•¨ìˆ˜ ì´ìš©
+	//ì£¼ì–´ì§„fkeyê°’ì„ ê°€ì§ˆ ìˆ˜ ìˆëŠ” leaf nodeë¥¼ ë°˜í™˜. 
+	//history ë§í¬ë“œë¦¬ìŠ¤íŠ¸ í˜•íƒœë¡œ ê´€ë¦¬. headì™€ ê°€ê¹Œìš¸ìˆ˜ë¡ í•˜ìœ„ ë…¸ë“œì„
 	History* temp = new History;
 	temp->node = this;
 	temp->next = NULL;
 	int idx = this->findPlace(fkey);
 	temp->childidx = idx;
 	head->next = temp;
-	//root³ëµå¸¦ headÀÇ next·Î ³¢¿ö³ÖÀ½
+	//rootë…¸ë“œë¥¼ headì˜ nextë¡œ ë¼ì›Œë„£ìŒ
 
 	BTreeNode* obj = this->child[idx];
 	while (obj->getNodeType() == INTERNAL) {
@@ -156,7 +147,7 @@ BTreeLeafNode* BTreeInternalNode::findLeafNode(int fkey, History* head) {
 		
 		obj = ((BTreeInternalNode*)obj)->child[idx];
 	}
-	//ÀÌÁ¦ obj´Â leaf nodeÀÓ
+	//ì´ì œ objëŠ” leaf nodeì„
 	return (BTreeLeafNode*)obj;
 }
 
@@ -171,15 +162,15 @@ BTreeLeafNode::BTreeLeafNode() {
 
 BTreeLeafNode::~BTreeLeafNode() {}
 
-int BTreeLeafNode::findKey(int fkey) { //keys¹è¿­À» µ¹¸é¼­ fkeyÀÇ °ªÀ» °®´Â ¿ø¼Ò°¡ ÀÖ´ÂÁö °Ë»ö. Á¸ÀçÇÏ¸é 1 ¹İÈ¯
+int BTreeLeafNode::findKey(int fkey) { //keysë°°ì—´ì„ ëŒë©´ì„œ fkeyì˜ ê°’ì„ ê°–ëŠ” ì›ì†Œê°€ ìˆëŠ”ì§€ ê²€ìƒ‰. ì¡´ì¬í•˜ë©´ 1 ë°˜í™˜
 	for (int i = 0; i < weight; i++) {
 		if (keys[i] == fkey)
 			return 1;
 	}
-	return NULL; //fkey°ªÀÌ ¾ø´Â °æ¿ì
+	return NULL; //fkeyê°’ì´ ì—†ëŠ” ê²½ìš°
 }
 
-int BTreeLeafNode::findInsertPlace(int fkey) { //insertÇÒ idx¹İÈ¯. 
+int BTreeLeafNode::findInsertPlace(int fkey) { //insertí•  idxë°˜í™˜. 
 	for (int i = 0; i < weight; i++) {
 		if (fkey < keys[i])
 			return i;
@@ -191,19 +182,23 @@ long long BTreeLeafNode::getNthKey(int idx) {
 	return this->keys[idx];
 }
 
-void BTreeLeafNode::pushRight(int newvalue, int newvalue_idx) { //newvalue¸¦ keys[newvalue_idx]¿¡ Áı¾î³Ö°í ¿À¸¥ÂÊÀ¸·Î ÇÑÄ­ ¾¿ ¹Ñ. *ÀÌ ÇÔ¼ö´Â splitÀÌ ÇÊ¿ä ¾ø´Â °æ¿ì¿¡¸¸ »ç¿ë °¡´É
+void BTreeLeafNode::pushRight(int newvalue, int newvalue_idx) { //newvalueë¥¼ keys[newvalue_idx]ì— ì§‘ì–´ë„£ê³  ì˜¤ë¥¸ìª½ìœ¼ë¡œ í•œì¹¸ ì”© ë°‚. *ì´ í•¨ìˆ˜ëŠ” splitì´ í•„ìš” ì—†ëŠ” ê²½ìš°ì—ë§Œ ì‚¬ìš© ê°€ëŠ¥
 	for (int i = weight; i > newvalue_idx; i--)
 		keys[i] = keys[i - 1];
 	keys[newvalue_idx] = newvalue;
 	weight++;
 }
 
-BTreeLeafNode* BTreeLeafNode::split(int newvalue, int newvalue_idx) {  //right_sibling¿¬°áÀ» ¹Ù²Ù°í key°ªµé ¼¼ÆÃÇØÁÜ. splitµÈ °´Ã¼¿¡¼­ È£Ãâ
+BTreeLeafNode* BTreeLeafNode::split(int newvalue, int newvalue_idx) {  //right_siblingì—°ê²°ì„ ë°”ê¾¸ê³  keyê°’ë“¤ ì„¸íŒ…í•´ì¤Œ. splitëœ ê°ì²´ì—ì„œ í˜¸ì¶œ
 	BTreeLeafNode* newleaf = new BTreeLeafNode();
-	newleaf->weight = 5; //»õ·Î¿î ³ëµå¿¡´Â 5°³ key°¡ µé¾î°¨. (n=11, 11/2ÀÇ ¹İ¿Ã¸²)		
-	this->weight = 6;
 	
-	//temparr·Î keysº¹»ç. 
+	newleaf->weight = 5; //ìƒˆë¡œìš´ ë…¸ë“œì—ëŠ” 5ê°œ keyê°€ ë“¤ì–´ê°. (n=11, 11/2ì˜ ë°˜ì˜¬ë¦¼)		
+	this->weight = 6;
+	/*
+	newleaf->weight = 2; //ìƒˆë¡œìš´ ë…¸ë“œì—ëŠ” 5ê°œ keyê°€ ë“¤ì–´ê°. (n=4, 4/2ì˜ ë°˜ì˜¬ë¦¼)		
+	this->weight = 2;
+	*/
+	//temparrë¡œ keysë³µì‚¬. 
 	long long temparr[11];
 	for (int i = 0; i < newvalue_idx; i++)
 		temparr[i] = this->keys[i];
@@ -211,7 +206,7 @@ BTreeLeafNode* BTreeLeafNode::split(int newvalue, int newvalue_idx) {  //right_s
 	for (int i = newvalue_idx + 1; i < 11; i++)
 		temparr[i] = this->keys[i - 1];
 
-	//newleaf, thisÀÇ key ÃÊ±âÈ­
+	//newleaf, thisì˜ key ì´ˆê¸°í™”
 	for (int i = 0; i < this->weight; i++)
 		this->keys[i] = temparr[i];
 	for (int i = this->weight; i < NUM_KEYS; i++)
@@ -233,7 +228,7 @@ void BTreeLeafNode::printLeafNode() {
 		printf("%ld", keys[i]);
 		if (i != weight - 1)
 			printf(", ");
-		else //¸¶Áö¸· ¿ø¼Ò Ãâ·Â½Ã ÄŞ¸¶ ¾øÀÌ °³Çà
+		else //ë§ˆì§€ë§‰ ì›ì†Œ ì¶œë ¥ì‹œ ì½¤ë§ˆ ì—†ì´ ê°œí–‰
 			printf("\n");
 	}
 }
@@ -263,20 +258,20 @@ BTree::BTree() {
 	BTreeLeafNode* temp = new BTreeLeafNode();
 	temp->weight = 0;
 	root = temp;
-	//ÃÊ±â »ı¼º½Ã root´Â leafnodeÀÇ ÇüÅÂÀÌ¹Ç·Î, leaf node ÇÏ³ª »ı¼º ÈÄ weight 0 À¸·Î ÁöÁ¤.
+	//ì´ˆê¸° ìƒì„±ì‹œ rootëŠ” leafnodeì˜ í˜•íƒœì´ë¯€ë¡œ, leaf node í•˜ë‚˜ ìƒì„± í›„ weight 0 ìœ¼ë¡œ ì§€ì •.
 }
 
 BTree::~BTree() {}
 
 void BTree::insert(long long value) {
-	//root typeÀÌ leafÀÎ °æ¿ì - weightÈ®ÀÎ - 1. »ğÀÔ°¡´ÉÇÏ¸é »ğÀÔ, 2. overflow¸é split, InternalNode»ı¼º, root·Î ÁöÁ¤
-	//root typeÀÌ internalÀÎ °æ¿ì - traverse: keysÈ®ÀÎÇÏ¿© Å¸°í ³»·Á°¡±â. (while child type==Internal). ³»·Á°¡¼­ »ğÀÔ ÈÄ weightÈ®ÀÎ - 1. »ğÀÔ°¡´ÉÇÏ¸é »ğÀÔ, 2. overflow¸é split, InternalNode»ı¼º, insert() 
-	if (root->getNodeType() == LEAF) { //leaf°¡ rootÀÎ °æ¿ì
+	//root typeì´ leafì¸ ê²½ìš° - weightí™•ì¸ - 1. ì‚½ì…ê°€ëŠ¥í•˜ë©´ ì‚½ì…, 2. overflowë©´ split, InternalNodeìƒì„±, rootë¡œ ì§€ì •
+	//root typeì´ internalì¸ ê²½ìš° - traverse: keysí™•ì¸í•˜ì—¬ íƒ€ê³  ë‚´ë ¤ê°€ê¸°. (while child type==Internal). ë‚´ë ¤ê°€ì„œ ì‚½ì… í›„ weightí™•ì¸ - 1. ì‚½ì…ê°€ëŠ¥í•˜ë©´ ì‚½ì…, 2. overflowë©´ split, InternalNodeìƒì„±, insert() 
+	if (root->getNodeType() == LEAF) { //leafê°€ rootì¸ ê²½ìš°
 		BTreeLeafNode* tmp = (BTreeLeafNode*)root;
 		
 		int idx = tmp->findInsertPlace(value);
 		
-		if (tmp->weight == NUM_KEYS) { //split. internalnode»ı¼º. root¿Í ¿¬°á 
+		if (tmp->weight == NUM_KEYS) { //split. internalnodeìƒì„±. rootì™€ ì—°ê²° 
 			BTreeLeafNode* newleaf = tmp->split(value, idx);
 			BTreeInternalNode* newinternal = new BTreeInternalNode();
 			newinternal->weight = 1;
@@ -284,11 +279,11 @@ void BTree::insert(long long value) {
 			newinternal->makeMeRoot(tmp, newleaf, newvalue);
 			root = newinternal;
 		}
-		else { //split ÇÊ¿ä¾øÀ½
+		else { //split í•„ìš”ì—†ìŒ
 			tmp->pushRight(value, idx);
 		}
 	}
-	else { //ÀÏ¹İÀûÀÎ case (ROOT != LEAF)
+	else { //ì¼ë°˜ì ì¸ case (ROOT != LEAF)
 		History* head = new History;
 		head->childidx = NULL;
 		head->next = NULL;
@@ -296,11 +291,11 @@ void BTree::insert(long long value) {
 
 		BTreeInternalNode* temp_root = (BTreeInternalNode*)root;
 		BTreeLeafNode* leaf = temp_root->findLeafNode(value, head); 
-		//value°¡ µé¾î°¥ ³ëµå¸¦ Ã£¾Æ¼­ leaf¿¡ ÀúÀå
-		//head¿¡´Â leaf¸¦ Ã£´Â °úÁ¤¿¡¼­ °ÅÄ£ internal node°¡ linked-list ÇüÅÂ·Î ÀúÀåµÇ¾î ÀÖÀ½
+		//valueê°€ ë“¤ì–´ê°ˆ ë…¸ë“œë¥¼ ì°¾ì•„ì„œ leafì— ì €ì¥
+		//headì—ëŠ” leafë¥¼ ì°¾ëŠ” ê³¼ì •ì—ì„œ ê±°ì¹œ internal nodeê°€ linked-list í˜•íƒœë¡œ ì €ì¥ë˜ì–´ ìˆìŒ
 
 		int idx = leaf->findInsertPlace(value);
-		if (leaf->weight == NUM_KEYS) { //splitÇÊ¿ä
+		if (leaf->weight == NUM_KEYS) { //splití•„ìš”
 			BTreeLeafNode* newleaf = leaf->split(value, idx);
 			History* current = head->next;
 			BTreeInternalNode* parent_of_newnode = (BTreeInternalNode*)(current->node);
@@ -308,15 +303,15 @@ void BTree::insert(long long value) {
 			//leaf node split done.			
 			
 			
-			if (parent_of_newnode->weight == NUM_KEYS) { //internal nodeµµ split ÇÊ¿ä - iterativeÇÏ°Ô ±¸ÇöÇÏÀÚ (split_internal_according_to_history)
+			if (parent_of_newnode->weight == NUM_KEYS) { //internal nodeë„ split í•„ìš” - iterativeí•˜ê²Œ êµ¬í˜„í•˜ì (split_internal_according_to_history)
 				/*
 				***Internal Node Split - PROPAGATE***
 				*/
-				//leaf¿Í internal ¿¬°áÇÏ´Â ºÎºĞ ¿ì¼± ±¸Çö
-				//internalÀÌ Å¸°í ¿Ã¶ó°¡¸é¼­ splitÇÏ´Â ºÎºĞÀº ÇÔ¼ö·Î ¹İº¹ÀûÀ¸·Î ±¸Çö
+				//leafì™€ internal ì—°ê²°í•˜ëŠ” ë¶€ë¶„ ìš°ì„  êµ¬í˜„
+				//internalì´ íƒ€ê³  ì˜¬ë¼ê°€ë©´ì„œ splití•˜ëŠ” ë¶€ë¶„ì€ í•¨ìˆ˜ë¡œ ë°˜ë³µì ìœ¼ë¡œ êµ¬í˜„
 				
-				//1. internal node split, newinternal¿¡ newleaf¿¬°á. newinternal ±â¾ïÇØµÎ±â
-				//2. history[i+1] full ¿©ºÎ È®ÀÎ. ¹İº¹. 
+				//1. internal node split, newinternalì— newleafì—°ê²°. newinternal ê¸°ì–µí•´ë‘ê¸°
+				//2. history[i+1] full ì—¬ë¶€ í™•ì¸. ë°˜ë³µ. 
 				long long insert_key = newleaf->getNthKey(0);
 				BTreeInternalNode* newinternal = new BTreeInternalNode();
 				long long next_key = newinternal->split_internal(insert_key, current->childidx, parent_of_newnode, newleaf);
@@ -325,14 +320,16 @@ void BTree::insert(long long value) {
 				while (1) {
 					if (current->next == NULL) {
 						BTreeInternalNode* newroot = new BTreeInternalNode();
+						newroot->weight = 1;
 						newroot->makeMeRoot(parent_of_newnode, newinternal, next_key);
+						this->root = newroot;
 						break;
 					}
 					else {
 						current = current->next;
 						parent_of_newnode = (BTreeInternalNode*)(current->node);
-						//newinternalÀº ±×´ë·Î »ç¿ë(affected node)
-						//ÀÌÁ¦ p_o_nÀÇ full ¿©ºÎ¸¦ È®ÀÎÇØ¾ß ÇÔ. 
+						//newinternalì€ ê·¸ëŒ€ë¡œ ì‚¬ìš©(affected node)
+						//ì´ì œ p_o_nì˜ full ì—¬ë¶€ë¥¼ í™•ì¸í•´ì•¼ í•¨. 
 
 						if (parent_of_newnode->weight == NUM_KEYS) {
 							//split
@@ -351,7 +348,7 @@ void BTree::insert(long long value) {
 				parent_of_newnode->pushRight(newleaf->getNthKey(0), head->next->childidx, newleaf);
 			}
 		}
-		else { //splitÇÊ¿ä¾øÀ½
+		else { //splití•„ìš”ì—†ìŒ
 			leaf->pushRight(value, idx);
 		}
 	}
@@ -364,7 +361,7 @@ void BTree::remove(long long value) {
 
 void BTree::printLeafNode(long long value) { // find the leaf node that contains 'value' and print all values in the leaf node.
 
-	//value°¡ Æ®¸®¿¡ ¾ø´Â °æ¿ì´Â °í·ÁÇÏÁö ¾ÊÀ½. 
+	//valueê°€ íŠ¸ë¦¬ì— ì—†ëŠ” ê²½ìš°ëŠ” ê³ ë ¤í•˜ì§€ ì•ŠìŒ. 
 
 	BTreeLeafNode* temp;
 
@@ -418,7 +415,9 @@ void BTree::rangeQuery(long long low, long long high) {// print all found keys (
 }
 
 
-//void insert(long long value);
+/****************STATUS******************/
+
+//void insert(long long value); - DONE
 //void remove(long long value);
 //void printLeafNode(long long value); - DONE
 //void pointQuery(long long value); - DONE
