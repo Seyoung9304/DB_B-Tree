@@ -23,6 +23,12 @@ public:
 	NodeType getNodeType();
 };
 
+typedef struct history {
+	int childidx;
+	BTreeNode* node;
+	struct history* next;
+}History;
+
 class BTreeLeafNode :public BTreeNode {
 private:
 	long long keys[NUM_KEYS];
@@ -31,20 +37,18 @@ public:
 	int weight;
 	BTreeLeafNode();
 	~BTreeLeafNode();
-	int findKey(int fkey);
-	int findInsertPlace(int fkey);
-	long long getNthKey(int idx); //keys[idx]∞™ π›»Ø
-	void pushRight(int newvalue, int newvalue_idx);
-	BTreeLeafNode* split(int newvalue, int newvalue_idx); //right_siblingø¨∞·¿ª πŸ≤Ÿ∞Ì key∞™µÈ ºº∆√«ÿ¡‹. splitµ» ∞¥√ºø°º≠ »£√‚. ªı∑Œ ª˝±‰ leaf node ∏Æ≈œ.
+	int findKey(long long fkey);
+	int findInsertPlace(long long fkey);
+	long long getNthKey(int idx); //keys[idx]Í∞í Î∞òÌôò
+	void pushLeft(int deleteidx);
+	void pushRight(long long newvalue, int newvalue_idx);
+	BTreeLeafNode* split(long long newvalue, int newvalue_idx); //right_siblingÏó∞Í≤∞ÏùÑ Î∞îÍæ∏Í≥† keyÍ∞íÎì§ ÏÑ∏ÌåÖÌï¥Ï§å. splitÎêú Í∞ùÏ≤¥ÏóêÏÑú Ìò∏Ï∂ú. ÏÉàÎ°ú ÏÉùÍ∏¥ leaf node Î¶¨ÌÑ¥.
 	void printLeafNode();// print all keys in the current leaf node, separated by comma.
-	void printLeafNode(int low, int high); 
+	void printLeafNode(long long low, long long high);
+	void changeMyRightSibling(BTreeLeafNode* deletee);
+	int findDeletePlace(long long fkey);
+	bool checkIfLeftmost(History* head);
 };
-
-typedef struct history {
-	int childidx;
-	BTreeNode* node;
-	struct history* next;
-}History;
 
 class BTreeInternalNode :public BTreeNode {
 private:
@@ -54,13 +58,18 @@ public:
 	int weight;
 	BTreeInternalNode();
 	~BTreeInternalNode();
-	long long getNthKey(int idx); //keys[idx]∞™ π›»Ø
+	long long getNthKey(int idx); //keys[idx]Í∞í Î∞òÌôò
+	void setNthKey(int idx, long long value); //keys[idx]=value;
 	void makeMeRoot(BTreeNode* left, BTreeNode* right, long long newvalue);
-	int findPlace(int fkey);
-	long long split_internal(long long newvalue, int newvalue_idx, BTreeInternalNode* sibling, BTreeNode* rightchild); // affected childø¨∞·±Ó¡ˆ.
-	void pushRight(int newvalue, int newvalue_idx, BTreeNode* right);
-	BTreeLeafNode* findLeafNode(int fkey);
-	BTreeLeafNode* findLeafNode(int fkey, History* linked_list);
+	int findPlace(long long fkey);
+	long long split_internal(long long newvalue, int newvalue_idx, BTreeInternalNode* sibling, BTreeNode* rightchild); // affected childÏó∞Í≤∞ÍπåÏßÄ.
+	void pushRight(long long newvalue, int newvalue_idx, BTreeNode* right);
+	void pushLeft(int deleteidx);
+	void pushChildOnFront(BTreeNode* newchild);
+	bool checkIfLeftmost(History* head);
+	BTreeNode* getNthChild(int idx);
+	BTreeLeafNode* findLeafNode(long long fkey);
+	BTreeLeafNode* findLeafNode(long long fkey, History* linked_list);
 };
 
 
