@@ -65,8 +65,9 @@ public:
 	long long split_internal(long long newvalue, int newvalue_idx, BTreeInternalNode* sibling, BTreeNode* rightchild); // affected child연결까지.
 	void pushRight(long long newvalue, int newvalue_idx, BTreeNode* right);
 	void pushLeft(int deleteidx);
-	void pushChildOnFront(BTreeNode* newchild);
-	bool checkIfLeftmost(History* head);
+	void pushChildOnFront(BTreeNode* newchild); //key, child가 세트로 이동
+	void deleteChildOnFront(); //leftmost child 삭제시, key와 child 모두 한칸씩 앞으로 이동
+	//bool checkIfLeftmost(History* head);
 	BTreeNode* getNthChild(int idx);
 	BTreeLeafNode* findLeafNode(long long fkey);
 	BTreeLeafNode* findLeafNode(long long fkey, History* linked_list);
