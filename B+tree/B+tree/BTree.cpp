@@ -50,14 +50,9 @@ long long BTreeInternalNode::split_internal(long long newvalue, int newvalue_idx
 	//returns a value which will be inserted in caller object's parent node.
 	//여기서 newvalue_idx는 rightchild가 sibling에 연결되어있던 child 배열 idx임. - child[newvalue_idx+1] = rightchild 해주면 됨. 
 	
-	
 	this->weight = 4;
 	sibling->weight = 6;
-
-	/*
-	this->weight = 1;
-	sibling->weight = 2;
-	*/
+	
 	//temparr로 keys복사. 
 	long long temparr[11];
 	for (int i = 0; i < newvalue_idx; i++)
@@ -117,23 +112,40 @@ void BTreeInternalNode::pushRight(long long newvalue, int newvalue_idx, BTreeNod
 
 void BTreeInternalNode::pushLeft(int deleteidx) {
 	//deleteIdx는 keys 배열의 idx임. keys[idx], child[idx+1]부터 삭제됨. 
+	//한 세트가 아예 없어지는 경우(key, child)
 	for (int i = deleteidx; i < weight - 1; i++)
 		keys[i] = keys[i + 1];
-	for (int i = deleteidx; i < weight; i++)
+	keys[weight - 1] = NULL;
+
+	for (int i = deleteidx+1; i < weight; i++)
 		child[i] = child[i + 1];
+	child[weight] = NULL;
+	/*
 	if (deleteidx != 0) {
 		if (child[deleteidx]->getNodeType() == INTERNAL)
 			keys[deleteidx - 1] = ((BTreeInternalNode*)(child[deleteidx]))->getNthKey(0);
 		else
 			keys[deleteidx - 1] = ((BTreeLeafNode*)(child[deleteidx]))->getNthKey(0);
 	}
+	*/
+	weight--;
+}
+
+void BTreeInternalNode::deleteChildOnFront() {
+	for (int i = 0; i < weight-1; i++) 
+		keys[i] = keys[i + 1];
+	keys[weight-1] = NULL;
+	for (int i = 0; i < weight; i++)
+		child[i] = child[i + 1];
+	child[weight] = NULL;
+
 	weight--;
 }
 
 void BTreeInternalNode::pushChildOnFront(BTreeNode* newchild) {
-	for (int i = weight; i > 0; i++)
+	for (int i = weight; i > 0; i--)
 		keys[i] = keys[i - 1];
-	for (int i = weight + 1; i > 0; i++)
+	for (int i = weight + 1; i > 0; i--)
 		child[i] = child[i - 1];
 	child[0] = newchild;
 	keys[0] = ((BTreeLeafNode*)child[1])->getNthKey(0);
@@ -183,16 +195,6 @@ BTreeLeafNode* BTreeInternalNode::findLeafNode(long long fkey, History* head) {
 	}
 	//이제 obj는 leaf node임
 	return (BTreeLeafNode*)obj;
-}
-
-bool BTreeInternalNode::checkIfLeftmost(History* head) {
-	History* cur = head->next;
-	while (cur != NULL) {
-		if (cur->childidx != 0)
-			return false;
-		cur = cur->next;
-	}
-	return true;
 }
 
 BTreeLeafNode::BTreeLeafNode() {
@@ -250,6 +252,9 @@ void BTreeLeafNode::pushRight(long long newvalue, int newvalue_idx) { //newvalue
 void BTreeLeafNode::pushLeft(int deleteidx) { //deleteidx에 있는 값을 지우고, 그 뒤에 있는 keys를 왼쪽으로 한칸씩 shift, weight--
 	for (int i = deleteidx; i < weight-1; i++)
 		keys[i] = keys[i + 1];
+	for (int i = weight - 1; i < NUM_KEYS; i++) {
+		keys[i] = NULL;
+	}
 	weight--;
 }
 
@@ -258,10 +263,7 @@ BTreeLeafNode* BTreeLeafNode::split(long long newvalue, int newvalue_idx) {  //r
 	
 	newleaf->weight = 5; //새로운 노드에는 5개 key가 들어감. (n=11, 11/2의 반올림)		
 	this->weight = 6;
-	/*
-	newleaf->weight = 2; //새로운 노드에는 5개 key가 들어감. (n=4, 4/2의 반올림)		
-	this->weight = 2;
-	*/
+
 	//temparr로 keys복사. 
 	long long temparr[11];
 	for (int i = 0; i < newvalue_idx; i++)
@@ -320,10 +322,12 @@ void BTreeLeafNode::printLeafNode(long long low, long long high) {
 
 bool BTreeLeafNode::checkIfLeftmost(History* head) {
 	History* cur = head->next;
-	while (cur != NULL) {
+	int i = 0;
+	while (cur != NULL && i < 2) {
 		if (cur->childidx != 0)
 			return false;
 		cur = cur->next;
+		i++;
 	}
 	return true;
 }
@@ -462,7 +466,7 @@ void BTree::remove(long long value) {
 				BTreeLeafNode* right_sibling = (BTreeLeafNode*)parent->getNthChild(1);
 
 
-				if (right_sibling->weight - 1 >= 5) {
+				if (right_sibling->weight - 1 >= 2) {
 					//Borrow
 					//right sibling의 최소값 가져오기, right sibling 노드에서 해당 삭제
 					//가져온 값을 leaf에 삽입
@@ -481,14 +485,14 @@ void BTree::remove(long long value) {
 					}
 					
 
-					//leaf는 이제 떨거지.. rightsibling 변경해주지 않아도 괜찮다. (어차피 부모노드에서 끊어내면 그만)
+					///////////////////////////////////////////////////////////////nono//leaf는 이제 떨거지.. rightsibling 변경해주지 않아도 괜찮다. (어차피 부모노드에서 끊어내면 그만)
 
-					parent->pushLeft(0);
+
+					parent->deleteChildOnFront();
 
 					if (parent->weight < 5) { //leftpush 후, 부모가 underflow라면, 부모도 right sibling과 borrow 또는 merge 필요
-						if (parent == root) {
-							if (parent->weight == 0)
-								root = right_sibling;
+						if (parent == root && parent->weight==0) {
+							root = right_sibling;
 							return;
 						}
 						
@@ -500,7 +504,7 @@ void BTree::remove(long long value) {
 							//right는 left push
 							//right의 새로운 leftmost key를 grandparent에
 							parent->pushRight(((BTreeLeafNode*)parent_right_sibling)->getNthKey(0), parent->weight, parent_right_sibling->getNthChild(0));
-							parent_right_sibling->pushLeft(0);
+							parent_right_sibling->deleteChildOnFront();
 							grand_parent->setNthKey(head->next->next->childidx, ((BTreeLeafNode*)parent_right_sibling)->getNthKey(0));
 						}
 						else {
@@ -510,8 +514,8 @@ void BTree::remove(long long value) {
 								parent_right_sibling->pushChildOnFront(parent->getNthChild(i));
 							}
 							//grandparent left push
-							grand_parent->pushLeft(0);
-							if (grand_parent->weight == 0) {
+							grand_parent->deleteChildOnFront();
+							if (grand_parent->weight == 0 && grand_parent==root) {
 								root = parent_right_sibling;
 							}
 						}
@@ -541,7 +545,8 @@ void BTree::remove(long long value) {
 					long long borrow_value = left_sibling->getNthKey(left_sibling->weight - 1);
 					left_sibling->pushLeft(left_sibling->weight - 1); //left의 weight 조절 완료
 					leaf->pushRight(borrow_value, 0); //leaf의 weight 조절 완료
-					parent->setNthKey(head->next->childidx - 1, borrow_value);
+					if (head->next->childidx != 0)
+						parent->setNthKey(head->next->childidx - 1, borrow_value);
 				}
 				else {
 					//Merge
@@ -560,13 +565,15 @@ void BTree::remove(long long value) {
 					}
 
 					grand_parent = (BTreeInternalNode*)head->next->next->node;
-					if (head->next->childidx == 0)
+					if (head->next->childidx == 0) { //merge 후 지워진 노드가 parent의 leftmost인 경우
 						grand_parent->setNthKey(head->next->next->childidx - 1, parent->getNthKey(0));
-
-					parent->pushLeft(head->next->childidx);
+						parent->deleteChildOnFront();
+					}
+					else
+						parent->pushLeft(head->next->childidx - 1);
 
 					if (parent->weight < 5) { //leftpush 후, 부모가 underflow라면, 부모도 left sibling과 borrow 또는 merge 필요
-						if (parent->checkIfLeftmost(head->next)) { //parent가 트리의 leftmost인 경우
+						if (head->next->next->childidx == 0) { //parent가 트리의 leftmost인 경우
 							BTreeInternalNode* parent_right_sibling = (BTreeInternalNode*)(grand_parent->getNthChild(1));
 							if (parent_right_sibling->weight - 1 >= 5) {
 								//borrow.
@@ -574,7 +581,7 @@ void BTree::remove(long long value) {
 								//right는 left push
 								//right의 새로운 leftmost key를 grandparent에
 								parent->pushRight(((BTreeLeafNode*)parent_right_sibling)->getNthKey(0), parent->weight, parent_right_sibling->getNthChild(0));
-								parent_right_sibling->pushLeft(0);
+								parent_right_sibling->deleteChildOnFront();
 								grand_parent->setNthKey(head->next->next->childidx, ((BTreeLeafNode*)parent_right_sibling)->getNthKey(0));
 							}
 							else {
@@ -584,8 +591,8 @@ void BTree::remove(long long value) {
 									parent_right_sibling->pushChildOnFront(parent->getNthChild(i));
 								}
 								//grandparent left push
-								grand_parent->pushLeft(0);
-								if (grand_parent->weight == 0) {
+								grand_parent->deleteChildOnFront();
+								if (grand_parent->weight == 0 && root==grand_parent) {
 									root = parent_right_sibling;
 								}
 							}
@@ -608,7 +615,7 @@ void BTree::remove(long long value) {
 								}
 								//grandparent left push
 								grand_parent->pushLeft(head->next->next->childidx - 1);
-								if (grand_parent->weight == 0) {
+								if (grand_parent->weight == 0 && root==grand_parent) {
 									root = parent_left_sibling;
 								}
 							}
@@ -680,8 +687,8 @@ void BTree::rangeQuery(long long low, long long high) {// print all found keys (
 
 /****************STATUS******************/
 
-//void insert(long long value); - DONE
-//void remove(long long value); - DUBUG
-//void printLeafNode(long long value); - DONE
-//void pointQuery(long long value); - DONE
-//void rangeQuery(long long low, long long high); - DONE
+//insert - DONE
+//remove - DONE
+//printLeafNode - DONE
+//pointQuery - DONE
+//rangeQuery - DONE
